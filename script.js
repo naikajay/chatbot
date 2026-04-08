@@ -117,7 +117,7 @@ Fees: ₹70,000/year
 /* 🤖 API CALL (SEARCH ANYTHING) */
 async function getAIResponse(message) {
   try {
-    let res = await fetch("https://your-render-url.onrender.com/chat", {
+    let res = await fetch("https://ajaychatbot9811-av8cey77d-naikajays-projects.vercel.app/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
