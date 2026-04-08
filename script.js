@@ -30,7 +30,12 @@ What are you looking for today?`, "bot");
 
 /* TOGGLE */
 function toggle() {
-  chat.style.display = chat.style.display === "flex" ? "none" : "flex";
+  const isOpen = chat.style.display === "flex";
+
+  chat.style.display = isOpen ? "none" : "flex";
+
+  // mobile scroll fix
+  document.body.style.overflow = isOpen ? "auto" : "hidden";
 }
 
 /* TIME */
