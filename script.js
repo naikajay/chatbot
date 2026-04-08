@@ -3,7 +3,6 @@ let userName = localStorage.getItem("name") || "";
 // MEMORY
 let memory = [];
 let lastTopic = "";
-let lastIntent = "";
 
 const body = document.getElementById("chat-body");
 const chat = document.getElementById("chatbox");
@@ -21,21 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
   body.innerHTML = localStorage.getItem("chat") || "";
 
   if (!localStorage.getItem("welcome")) {
-    add(`👋 Hey ${userName}! 😊  
-I'm here to help with admissions, fees, and more.  
-What are you looking for today?`, "bot");
+    add(`👋 Hey ${userName}! Ask me anything 😊`, "bot");
     localStorage.setItem("welcome", true);
   }
 });
 
 /* TOGGLE */
 function toggle() {
-  const isOpen = chat.style.display === "flex";
-
-  chat.style.display = isOpen ? "none" : "flex";
-
-  // mobile scroll fix
-  document.body.style.overflow = isOpen ? "auto" : "hidden";
+  chat.style.display = chat.style.display === "flex" ? "none" : "flex";
 }
 
 /* TIME */
@@ -65,88 +57,84 @@ function normalize(text) {
   return text.toLowerCase();
 }
 
-/* HUMAN SMART REPLY */
-function getReply(text) {
+/* 🧠 LOCAL SMART LOGIC */
+function getLocalReply(text) {
   text = normalize(text);
 
-  if (/^(hi|hello|hey|yo|hii)/.test(text)) {
-    return `Hey ${userName}! 😊  
-
-Are you planning for admission in a course like CS?`;
+  // RESET CONTEXT
+  if (text.includes("library") || text.includes("wifi")) {
+    lastTopic = "";
   }
 
-  if (text.includes("cs") || text.includes("computer")) {
+  // GREETING
+  if (/^(hi|hello|hey|yo)/.test(text)) {
+    return `Hey ${userName}! 😊 What can I help you with?`;
+  }
+
+  // LIBRARY
+  if (text.includes("library")) {
+    lastTopic = "library";
+    return `📚 Library Card:
+
+1. Visit library desk  
+2. Fill form  
+3. Submit ID  
+4. Get card same day  
+
+📞 02462-222333`;
+  }
+
+  // WIFI
+  if (text.includes("wifi")) {
+    lastTopic = "wifi";
+    return `📶 WiFi:
+
+Username = student ID  
+Password from admin  
+
+📞 IT: 02462-999888`;
+  }
+
+  // CS
+  if (text.includes("cs")) {
     lastTopic = "cs";
+    return `CS Admission 👍
 
-    return `Nice 👍 CS is a great choice!
-
-You’ll need 12th Science (PCM).  
-Fees are around ₹70,000/year.
-
-📞 You can contact: 02462-123456  
-
-Want help with documents or fees details?`;
-  }
-
-  if (text.includes("fees")) {
-    if (lastTopic === "cs" || memory.join(" ").includes("cs")) {
-      return `For CS, fees are about ₹70,000/year  
-+ small exam fee (~₹2,000)
-
-If needed, I can also explain scholarships 👍`;
-    }
-    return `Fees depend on the course. Which one are you interested in?`;
-  }
-
-  if (text.includes("document")) {
-    return `You’ll need:
-
-• 10th & 12th marksheets  
-• Aadhaar  
-• Photo  
-• Transfer certificate  
-
-Submit at admin office 👍`;
-  }
-
-  if (text.includes("scholarship")) {
-    return `Yes 👍 scholarships are available:
-
-• Merit-based  
-• Govt schemes  
-
-Want me to check eligibility for you?`;
-  }
-
-  if (text.includes("last date")) {
-    return `Admissions usually close around July–August.
-
-Better confirm here:
+Fees: ₹70,000/year  
 📞 02462-123456`;
   }
 
-  if (lastTopic === "cs") {
-    return `Got it 👍 you're asking about CS.
-
-What do you want next?
-
-👉 fees  
-👉 documents  
-👉 scholarship`;
+  // FEES
+  if (text.includes("fees")) {
+    if (lastTopic === "cs" || memory.join(" ").includes("cs")) {
+      return `CS Fees: ₹70,000/year 👍`;
+    }
   }
 
-  return `Hmm 🤔 I didn’t fully get that.
+  return null; // VERY IMPORTANT
+}
 
-But I can help with:
-• CS admission  
-• fees  
-• documents  
+/* 🤖 API CALL (SEARCH ANYTHING) */
+async function getAIResponse(message) {
+  try {
+    let res = await fetch("https://your-render-url.onrender.com/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message })
+    });
 
-Just tell me 👍`;
+    let data = await res.json();
+    return data.reply;
+
+  } catch {
+    return "⚠️ Unable to fetch answer right now.";
+  }
 }
 
 /* SEND */
-function send() {
+async function send() {
   let input = document.getElementById("input");
   let text = input.value.trim();
   if (!text) return;
@@ -157,11 +145,24 @@ function send() {
   add(text, "user");
   input.value = "";
 
-  let reply = getReply(text);
+  // 1️⃣ LOCAL FIRST
+  let localReply = getLocalReply(text);
 
-  setTimeout(() => {
-    add(reply, "bot");
-  }, 500);
+  if (localReply) {
+    setTimeout(() => add(localReply, "bot"), 400);
+    return;
+  }
+
+  // 2️⃣ API FALLBACK
+  let loading = document.createElement("div");
+  loading.className = "bot";
+  loading.innerText = "🤖 Searching...";
+  body.appendChild(loading);
+
+  let aiReply = await getAIResponse(text);
+
+  body.removeChild(loading);
+  add(aiReply, "bot");
 }
 
 /* ENTER */
