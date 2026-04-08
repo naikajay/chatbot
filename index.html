@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI College Chatbot</title>
+
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="hero">
+  <h1>🎓 College Portal</h1>
+  <p>Ask anything about admissions, fees, facilities</p>
+</div>
+
+<div id="chat-btn">💬</div>
+
+<div id="chatbox">
+  <div class="header">
+    <span>🤖 AI Assistant</span>
+    <div>
+      <button onclick="clearChat()">🧹</button>
+      <button onclick="toggle()">✖</button>
+    </div>
+  </div>
+
+  <div id="chat-body"></div>
+
+  <div class="footer">
+    <input id="input" placeholder="Type message...">
+    <button onclick="send()">Send</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
